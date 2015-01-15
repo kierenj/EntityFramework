@@ -245,7 +245,8 @@ namespace Microsoft.Data.Entity.Metadata.Internal
             return true;
         }
 
-        private bool CanSetNavigation(string navigationName,
+        private bool CanSetNavigation(
+            string navigationName,
             ForeignKey foreignKey,
             bool pointsToPrincipal,
             ConfigurationSource configurationSource,
@@ -432,7 +433,7 @@ namespace Microsoft.Data.Entity.Metadata.Internal
         {
             return dependentProperties == null
                 ? null
-                : Relationship(principalType, Metadata, null, null, false, configurationSource)
+                : Relationship(principalType, Metadata, null, null, configurationSource, false, true)
                     .ForeignKey(dependentProperties, configurationSource);
         }
 
@@ -571,8 +572,10 @@ namespace Microsoft.Data.Entity.Metadata.Internal
             [NotNull] Type dependentType,
             [CanBeNull] string navigationToPrincipalName,
             [CanBeNull] string navigationToDependentName,
-            bool oneToOne,
-            ConfigurationSource configurationSource)
+            ConfigurationSource configurationSource,
+            bool? oneToOne = null,
+            bool strictPrincipal = true,
+            bool preferPrincipal = true)
         {
             Check.NotNull(principalType, "principalType");
             Check.NotNull(dependentType, "dependentType");
@@ -594,8 +597,10 @@ namespace Microsoft.Data.Entity.Metadata.Internal
                 dependentEntityTypeBuilder,
                 navigationToPrincipalName,
                 navigationToDependentName,
+                configurationSource,
                 oneToOne,
-                configurationSource);
+                strictPrincipal,
+                preferPrincipal);
         }
 
         public virtual InternalRelationshipBuilder Relationship(
@@ -603,8 +608,10 @@ namespace Microsoft.Data.Entity.Metadata.Internal
             [NotNull] EntityType dependentEntityType,
             [CanBeNull] string navigationToPrincipalName,
             [CanBeNull] string navigationToDependentName,
-            bool oneToOne,
-            ConfigurationSource configurationSource)
+            ConfigurationSource configurationSource,
+            bool? oneToOne = null,
+            bool strictPrincipal = true,
+            bool preferPrincipal = true)
         {
             Check.NotNull(principalEntityType, "principalEntityType");
             Check.NotNull(dependentEntityType, "dependentEntityType");
@@ -620,8 +627,10 @@ namespace Microsoft.Data.Entity.Metadata.Internal
                 dependentEntityTypeBuilder,
                 navigationToPrincipalName,
                 navigationToDependentName,
+                configurationSource,
                 oneToOne,
-                configurationSource);
+                strictPrincipal,
+                preferPrincipal);
         }
 
         public virtual InternalRelationshipBuilder Relationship(
@@ -629,8 +638,10 @@ namespace Microsoft.Data.Entity.Metadata.Internal
             [NotNull] InternalEntityBuilder dependentEntityTypeBuilder,
             [CanBeNull] string navigationToPrincipalName,
             [CanBeNull] string navigationToDependentName,
-            bool oneToOne,
-            ConfigurationSource configurationSource)
+            ConfigurationSource configurationSource,
+            bool? oneToOne = null,
+            bool strictPrincipal = true,
+            bool preferPrincipal = true)
         {
             Check.NotNull(principalEntityTypeBuilder, "principalEntityTypeBuilder");
             Check.NotNull(dependentEntityTypeBuilder, "dependentEntityTypeBuilder");
@@ -642,17 +653,19 @@ namespace Microsoft.Data.Entity.Metadata.Internal
                     dependentEntityTypeBuilder,
                     navigationToPrincipalName,
                     navigationToDependentName,
+                    configurationSource,
                     oneToOne,
-                    configurationSource);
+                    strictPrincipal,
+                    preferPrincipal);
             }
 
-            if (navigationToPrincipalName != null
+            if (!string.IsNullOrEmpty(navigationToPrincipalName)
                 && !dependentEntityTypeBuilder.CanAdd(navigationToPrincipalName, isNavigation: true, configurationSource: configurationSource))
             {
                 return null;
             }
 
-            if (navigationToDependentName != null
+            if (!string.IsNullOrEmpty(navigationToDependentName)
                 && !principalEntityTypeBuilder.CanAdd(navigationToDependentName, isNavigation: true, configurationSource: configurationSource))
             {
                 return null;
@@ -671,26 +684,41 @@ namespace Microsoft.Data.Entity.Metadata.Internal
                 return null;
             }
 
-            var navigationToPrincipal = navigationToPrincipalName == null
-                ? null
-                : dependentEntityType.TryGetNavigation(navigationToPrincipalName);
+            var candidateNavigations = new List<Tuple<Navigation, string, bool>>();
 
-            if (navigationToPrincipal != null
-                && navigationToPrincipal.ForeignKey.IsCompatible(principalEntityType, dependentEntityType, oneToOne)
-                && navigationToPrincipal.PointsToPrincipal)
-            {
-                return UseExistingRelationship(navigationToPrincipal, navigationToDependentName, configurationSource);
-            }
-
-            var navigationToDependent = navigationToDependentName == null
+            var navigationToDependent = string.IsNullOrEmpty(navigationToDependentName)
                 ? null
                 : principalEntityType.TryGetNavigation(navigationToDependentName);
 
-            if (navigationToDependent != null
-                && navigationToDependent.ForeignKey.IsCompatible(principalEntityType, dependentEntityType, oneToOne)
-                && !navigationToDependent.PointsToPrincipal)
+            if (navigationToDependent != null)
             {
-                return UseExistingRelationship(navigationToDependent, navigationToPrincipalName, configurationSource);
+                candidateNavigations.Add(new Tuple<Navigation, string, bool>(navigationToDependent, navigationToPrincipalName, false));
+            }
+
+            var navigationToPrincipal = string.IsNullOrEmpty(navigationToPrincipalName)
+                ? null
+                : dependentEntityType.TryGetNavigation(navigationToPrincipalName);
+
+            if (navigationToPrincipal != null)
+            {
+                candidateNavigations.Add(new Tuple<Navigation, string, bool>(navigationToPrincipal, navigationToDependentName, true));
+            }
+
+            if (!preferPrincipal)
+            {
+                candidateNavigations.Reverse();
+            }
+
+            foreach (var navigationCandidate in candidateNavigations)
+            {
+                if ((navigationCandidate.Item1.ForeignKey.IsCompatible(principalEntityType, dependentEntityType, oneToOne)
+                     && navigationCandidate.Item1.PointsToPrincipal == navigationCandidate.Item3)
+                    || (!strictPrincipal
+                        && navigationCandidate.Item1.ForeignKey.IsCompatible(dependentEntityType, principalEntityType, oneToOne)
+                        && navigationCandidate.Item1.PointsToPrincipal == !navigationCandidate.Item3))
+                {
+                    return UseExistingRelationship(navigationCandidate.Item1, navigationCandidate.Item2, configurationSource);
+                }
             }
 
             if (!RemoveRelationships(configurationSource, navigationToPrincipal?.ForeignKey, navigationToDependent?.ForeignKey))
@@ -717,13 +745,21 @@ namespace Microsoft.Data.Entity.Metadata.Internal
 
             _relationshipBuilders.Value.Add(foreignKey, relationshipBuilder, configurationSource);
 
-            var navigationToPrincipalSet = dependentEntityTypeBuilder
-                .Navigation(navigationToPrincipalName, foreignKey, pointsToPrincipal: true, configurationSource: configurationSource);
-            Debug.Assert(navigationToPrincipalSet);
+            if (navigationToPrincipalName != null)
+            {
+                navigationToPrincipalName = navigationToPrincipalName == "" ? null : navigationToPrincipalName;
+                var navigationToPrincipalSet = dependentEntityTypeBuilder
+                    .Navigation(navigationToPrincipalName, foreignKey, pointsToPrincipal: true, configurationSource: configurationSource);
+                Debug.Assert(navigationToPrincipalSet);
+            }
 
-            var navigationToDependentSet = principalEntityTypeBuilder
-                .Navigation(navigationToDependentName, foreignKey, pointsToPrincipal: false, configurationSource: configurationSource);
-            Debug.Assert(navigationToDependentSet);
+            if (navigationToDependentName != null)
+            {
+                navigationToDependentName = navigationToDependentName == "" ? null : navigationToDependentName;
+                var navigationToDependentSet = principalEntityTypeBuilder
+                    .Navigation(navigationToDependentName, foreignKey, pointsToPrincipal: false, configurationSource: configurationSource);
+                Debug.Assert(navigationToDependentSet);
+            }
 
             return relationshipBuilder;
         }
@@ -733,13 +769,17 @@ namespace Microsoft.Data.Entity.Metadata.Internal
             var existingInverseNavigation = navigation.TryGetInverse();
             var targetEntityType = navigation.GetTargetType();
 
-            if ((existingInverseNavigation != null && existingInverseNavigation.Name != inverseNavigationName)
-                || (existingInverseNavigation == null && inverseNavigationName != null))
+            if (inverseNavigationName != null)
             {
-                var targetEntityTypeBuilder = ModelBuilder.Entity(targetEntityType.Name, ConfigurationSource.Convention);
-                if (!targetEntityTypeBuilder.Navigation(inverseNavigationName, navigation.ForeignKey, !navigation.PointsToPrincipal, configurationSource))
+                inverseNavigationName = inverseNavigationName == "" ? null : inverseNavigationName;
+                if ((existingInverseNavigation != null && existingInverseNavigation.Name != inverseNavigationName)
+                    || (existingInverseNavigation == null && inverseNavigationName != null))
                 {
-                    return null;
+                    var targetEntityTypeBuilder = ModelBuilder.Entity(targetEntityType.Name, ConfigurationSource.Convention);
+                    if (!targetEntityTypeBuilder.Navigation(inverseNavigationName, navigation.ForeignKey, !navigation.PointsToPrincipal, configurationSource))
+                    {
+                        return null;
+                    }
                 }
             }
 

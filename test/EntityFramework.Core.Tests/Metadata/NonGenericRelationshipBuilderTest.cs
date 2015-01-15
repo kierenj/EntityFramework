@@ -37,7 +37,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToMany(typeof(Order), "Orders", "Customer");
+            modelBuilder.Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Same(navToPrincipal, dependentType.Navigations.Single());
@@ -74,7 +74,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToMany(typeof(Order), "Orders", "Customer");
+            modelBuilder.Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Same(navigation, dependentType.Navigations.Single());
@@ -111,7 +111,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToMany(typeof(Order), "Orders", "Customer");
+            modelBuilder.Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Equal("Customer", dependentType.Navigations.Single().Name);
@@ -146,7 +146,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToMany(typeof(Order), "Orders", "Customer");
+            modelBuilder.Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Equal("Customer", dependentType.Navigations.Single().Name);
@@ -180,7 +180,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToMany(typeof(Order), "Orders", "Customer");
+            modelBuilder.Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders");
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty, fk.Properties.Single());
@@ -216,7 +216,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToMany(typeof(Order), "Orders");
+            modelBuilder.Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders");
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty, fk.Properties.Single());
@@ -224,76 +224,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Empty(dependentType.Navigations);
             Assert.Equal("Orders", principalType.Navigations.Single().Name);
             Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToMany_can_create_unidirectional_from_other_end_nav_and_new_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Customer>().Key(c => c.Id);
-            modelBuilder.Entity<Order>().Property(e => e.CustomerId);
-
-            var dependentType = model.GetEntityType(typeof(Order));
-            var principalType = model.GetEntityType(typeof(Customer));
-
-            var fkProperty = dependentType.GetProperty("CustomerId");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            // Passing null as the first arg is not super-compelling, but it is consistent
-            modelBuilder.Entity(typeof(Customer)).OneToMany(typeof(Order), null, "Customer");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Equal("Customer", dependentType.Navigations.Single().Name);
-            Assert.Empty(principalType.Navigations);
-            Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToMany_can_create_relationship_with_no_navigations()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Customer>().Key(c => c.Id);
-            modelBuilder.Entity<Order>().Property(e => e.CustomerId);
-
-            var dependentType = model.GetEntityType(typeof(Order));
-            var principalType = model.GetEntityType(typeof(Customer));
-
-            var fkProperty = dependentType.GetProperty("CustomerId");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder.Entity(typeof(Customer)).OneToMany(typeof(Order));
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Empty(principalType.Navigations);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -322,8 +252,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Customer))
-                .OneToMany(typeof(Order), "Orders", "Customer")
+                .Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders")
                 .ForeignKey("CustomerId");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -362,8 +291,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToMany(typeof(Pickle), "Pickles", "BigMak")
+                .Entity(typeof(BigMak)).HasMany(typeof(Pickle), "Pickles").WithOne("Pickles")
                 .ForeignKey("BurgerId");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
@@ -399,8 +327,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToMany(typeof(Pickle), "Pickles", "BigMak")
+                .Entity(typeof(BigMak)).HasMany(typeof(Pickle), "Pickles").WithOne("Pickles")
                 .ForeignKey("BurgerId");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -438,8 +365,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToMany(typeof(Pickle), "Pickles")
+                .Entity(typeof(BigMak)).HasMany(typeof(Pickle), "Pickles").WithOne("Pickles")
                 .ForeignKey("BurgerId");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -448,81 +374,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Empty(dependentType.Navigations);
             Assert.Equal("Pickles", principalType.Navigations.Single().Name);
             Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToMany_can_create_unidirectional_from_other_end_nav_and_specified_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<BigMak>().Key(c => c.Id);
-            modelBuilder.Entity<Pickle>().Property(e => e.BurgerId);
-
-            var dependentType = model.GetEntityType(typeof(Pickle));
-            var principalType = model.GetEntityType(typeof(BigMak));
-
-            var fkProperty = dependentType.GetProperty("BurgerId");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToMany(typeof(Pickle), null, "BigMak")
-                .ForeignKey("BurgerId");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Equal("BigMak", dependentType.Navigations.Single().Name);
-            Assert.Empty(principalType.Navigations);
-            Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToMany_can_create_relationship_with_no_navigations_and_specified_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<BigMak>().Key(c => c.Id);
-            modelBuilder.Entity<Pickle>().Property(e => e.BurgerId);
-
-            var dependentType = model.GetEntityType(typeof(Pickle));
-            var principalType = model.GetEntityType(typeof(BigMak));
-
-            var fkProperty = dependentType.GetProperty("BurgerId");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToMany(typeof(Pickle))
-                .ForeignKey("BurgerId");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Empty(principalType.Navigations);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -548,7 +399,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(BigMak)).OneToMany(typeof(Pickle), "Pickles", "BigMak");
+            modelBuilder.Entity(typeof(BigMak)).HasMany(typeof(Pickle), "Pickles").WithOne("Pickles");
 
             var fk = dependentType.ForeignKeys.Single();
             var fkProperty = fk.Properties.Single();
@@ -587,7 +438,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(BigMak)).OneToMany(typeof(Pickle), "Pickles");
+            modelBuilder.Entity(typeof(BigMak)).HasMany(typeof(Pickle), "Pickles").WithOne("Pickles");
 
             var fk = dependentType.ForeignKeys.Single();
             var fkProperty = fk.Properties.Single();
@@ -600,81 +451,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Empty(dependentType.Navigations);
             Assert.Equal("Pickles", principalType.Navigations.Single().Name);
             Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount + 1, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToMany_can_create_unidirectional_from_other_end_nav_with_shadow_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<BigMak>().Key(c => c.Id);
-            modelBuilder.Entity<Pickle>().Property(e => e.BurgerId);
-
-            var dependentType = model.GetEntityType(typeof(Pickle));
-            var principalType = model.GetEntityType(typeof(BigMak));
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder.Entity(typeof(BigMak)).OneToMany(typeof(Pickle), null, "BigMak");
-
-            var fk = dependentType.ForeignKeys.Single();
-            var fkProperty = fk.Properties.Single();
-
-            Assert.Equal("BigMakId", fkProperty.Name);
-            Assert.True(fkProperty.IsShadowProperty);
-            Assert.Same(typeof(int?), fkProperty.PropertyType);
-            Assert.Same(dependentType, fkProperty.EntityType);
-
-            Assert.Equal("BigMak", dependentType.Navigations.Single().Name);
-            Assert.Empty(principalType.Navigations);
-            Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount + 1, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToMany_can_create_relationship_with_no_navigations_with_shadow_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<BigMak>().Key(c => c.Id);
-            modelBuilder.Entity<Pickle>().Property(e => e.BurgerId);
-
-            var dependentType = model.GetEntityType(typeof(Pickle));
-            var principalType = model.GetEntityType(typeof(BigMak));
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder.Entity(typeof(BigMak)).OneToMany(typeof(Pickle));
-
-            var fk = dependentType.ForeignKeys.Single();
-            var fkProperty = fk.Properties.Single();
-
-            Assert.Equal("BigMakId", fkProperty.Name);
-            Assert.True(fkProperty.IsShadowProperty);
-            Assert.Same(typeof(int?), fkProperty.PropertyType);
-            Assert.Same(dependentType, fkProperty.EntityType);
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Empty(principalType.Navigations);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount + 1, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -702,7 +478,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
 
             var fkProperty = dependentType.GetProperty("BigMakId");
 
-            modelBuilder.Entity(typeof(BigMak)).OneToMany(typeof(Pickle), "Pickles", "BigMak");
+            modelBuilder.Entity(typeof(BigMak)).HasMany(typeof(Pickle), "Pickles").WithOne("Pickles");
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty, fk.Properties.Single());
@@ -741,8 +517,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToMany(typeof(Pickle), "Pickles", "BigMak")
+                .Entity(typeof(BigMak)).HasMany(typeof(Pickle), "Pickles").WithOne("Pickles")
                 .ForeignKey("BurgerId");
 
             Assert.Equal(2, dependentType.ForeignKeys.Count);
@@ -784,8 +559,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Customer))
-                .OneToMany(typeof(Order), "Orders", "Customer")
+                .Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders")
                 .ReferencedKey("Id");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -829,8 +603,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Customer))
-                .OneToMany(typeof(Order), "Orders", "Customer")
+                .Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders")
                 .ReferencedKey("AlternateKey");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -879,8 +652,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Customer))
-                .OneToMany(typeof(Order), "Orders", "Customer")
+                .Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders")
                 .ForeignKey("CustomerId")
                 .ReferencedKey("Id");
 
@@ -925,8 +697,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Customer))
-                .OneToMany(typeof(Order), "Orders", "Customer")
+                .Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders")
                 .ReferencedKey("Id")
                 .ForeignKey("CustomerId");
 
@@ -971,8 +742,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Customer))
-                .OneToMany(typeof(Order), "Orders", "Customer")
+                .Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders")
                 .ForeignKey("CustomerId")
                 .ReferencedKey("AlternateKey");
 
@@ -1022,8 +792,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Customer))
-                .OneToMany(typeof(Order), "Orders", "Customer")
+                .Entity(typeof(Customer)).HasMany(typeof(Order), "Orders").WithOne("Orders")
                 .ReferencedKey("AlternateKey")
                 .ForeignKey("CustomerId");
 
@@ -1073,8 +842,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToMany(typeof(Pickle), "Pickles", "BigMak")
+                .Entity(typeof(BigMak)).HasMany(typeof(Pickle), "Pickles").WithOne("Pickles")
                 .ForeignKey("BurgerId")
                 .ReferencedKey("AlternateKey");
 
@@ -1124,8 +892,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToMany(typeof(Pickle), "Pickles", "BigMak")
+                .Entity(typeof(BigMak)).HasMany(typeof(Pickle), "Pickles").WithOne("Pickles")
                 .ReferencedKey("AlternateKey")
                 .ForeignKey("BurgerId");
 
@@ -1173,7 +940,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Order)).ManyToOne(typeof(Customer), "Customer", "Orders");
+            modelBuilder.Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Same(navToPrincipal, dependentType.Navigations.Single());
@@ -1210,7 +977,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Order)).ManyToOne(typeof(Customer), "Customer", "Orders");
+            modelBuilder.Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Same(navigation, dependentType.Navigations.Single());
@@ -1247,7 +1014,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Order)).ManyToOne(typeof(Customer), "Customer", "Orders");
+            modelBuilder.Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Equal("Customer", dependentType.Navigations.Single().Name);
@@ -1282,7 +1049,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Order)).ManyToOne(typeof(Customer), "Customer", "Orders");
+            modelBuilder.Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Equal("Customer", dependentType.Navigations.Single().Name);
@@ -1316,7 +1083,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Order)).ManyToOne(typeof(Customer), "Customer", "Orders");
+            modelBuilder.Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders");
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty, fk.Properties.Single());
@@ -1352,43 +1119,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            // Passing null as the first arg is not super-compelling, but it is consistent
-            modelBuilder.Entity(typeof(Order)).ManyToOne(typeof(Customer), null, "Orders");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Equal("Orders", principalType.Navigations.Single().Name);
-            Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void ManyToOne_can_create_unidirectional_from_other_end_nav_and_new_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Customer>().Key(c => c.Id);
-            modelBuilder.Entity<Order>().Property(e => e.CustomerId);
-
-            var dependentType = model.GetEntityType(typeof(Order));
-            var principalType = model.GetEntityType(typeof(Customer));
-
-            var fkProperty = dependentType.GetProperty("CustomerId");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder.Entity(typeof(Order)).ManyToOne(typeof(Customer), "Customer");
+            modelBuilder.Entity(typeof(Order)).HasOne(typeof(Customer), null).WithMany(null);
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty, fk.Properties.Single());
@@ -1396,40 +1127,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Equal("Customer", dependentType.Navigations.Single().Name);
             Assert.Empty(principalType.Navigations);
             Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void ManyToOne_can_create_relationship_with_no_navigations()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Customer>().Key(c => c.Id);
-            modelBuilder.Entity<Order>().Property(e => e.CustomerId);
-
-            var dependentType = model.GetEntityType(typeof(Order));
-            var principalType = model.GetEntityType(typeof(Customer));
-
-            var fkProperty = dependentType.GetProperty("CustomerId");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder.Entity(typeof(Order)).ManyToOne(typeof(Customer));
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Empty(principalType.Navigations);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -1458,8 +1155,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Order))
-                .ManyToOne(typeof(Customer), "Customer", "Orders")
+                .Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders")
                 .ForeignKey("CustomerId");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -1498,8 +1194,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Pickle))
-                .ManyToOne(typeof(BigMak), "BigMak", "Pickles")
+                .Entity(typeof(Pickle)).HasOne(typeof(BigMak), "Pickles").WithMany("Pickles")
                 .ForeignKey("BurgerId");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
@@ -1535,8 +1230,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Pickle))
-                .ManyToOne(typeof(BigMak), "BigMak", "Pickles")
+                .Entity(typeof(Pickle)).HasOne(typeof(BigMak), "Pickles").WithMany("Pickles")
                 .ForeignKey("BurgerId");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -1574,46 +1268,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Pickle))
-                .ManyToOne(typeof(BigMak), null, "Pickles")
-                .ForeignKey("BurgerId");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Equal("Pickles", principalType.Navigations.Single().Name);
-            Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void ManyToOne_can_create_unidirectional_from_other_end_nav_and_specified_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<BigMak>().Key(c => c.Id);
-            modelBuilder.Entity<Pickle>().Property(e => e.BurgerId);
-
-            var dependentType = model.GetEntityType(typeof(Pickle));
-            var principalType = model.GetEntityType(typeof(BigMak));
-
-            var fkProperty = dependentType.GetProperty("BurgerId");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(Pickle))
-                .ManyToOne(typeof(BigMak), "BigMak")
+                .Entity(typeof(Pickle)).HasOne(typeof(BigMak), null).WithMany(null)
                 .ForeignKey("BurgerId");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -1622,43 +1277,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Equal("BigMak", dependentType.Navigations.Single().Name);
             Assert.Empty(principalType.Navigations);
             Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void ManyToOne_can_create_relationship_with_no_navigations_and_specified_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<BigMak>().Key(c => c.Id);
-            modelBuilder.Entity<Pickle>().Property(e => e.BurgerId);
-
-            var dependentType = model.GetEntityType(typeof(Pickle));
-            var principalType = model.GetEntityType(typeof(BigMak));
-
-            var fkProperty = dependentType.GetProperty("BurgerId");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(Pickle))
-                .ManyToOne(typeof(BigMak))
-                .ForeignKey("BurgerId");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Empty(principalType.Navigations);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -1684,7 +1302,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Pickle)).ManyToOne(typeof(BigMak), "BigMak", "Pickles");
+            modelBuilder.Entity(typeof(Pickle)).HasOne(typeof(BigMak), "Pickles").WithMany("Pickles");
 
             var fk = dependentType.ForeignKeys.Single();
             var fkProperty = fk.Properties.Single();
@@ -1723,45 +1341,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Pickle)).ManyToOne(typeof(BigMak), null, "Pickles");
-
-            var fk = dependentType.ForeignKeys.Single();
-            var fkProperty = fk.Properties.Single();
-
-            Assert.Equal("BigMakId", fkProperty.Name);
-            Assert.True(fkProperty.IsShadowProperty);
-            Assert.Same(typeof(int?), fkProperty.PropertyType);
-            Assert.Same(dependentType, fkProperty.EntityType);
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Equal("Pickles", principalType.Navigations.Single().Name);
-            Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount + 1, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void ManyToOne_can_create_unidirectional_from_other_end_nav_with_shadow_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<BigMak>().Key(c => c.Id);
-            modelBuilder.Entity<Pickle>().Property(e => e.BurgerId);
-
-            var dependentType = model.GetEntityType(typeof(Pickle));
-            var principalType = model.GetEntityType(typeof(BigMak));
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder.Entity(typeof(Pickle)).ManyToOne(typeof(BigMak), "BigMak");
+            modelBuilder.Entity(typeof(Pickle)).HasOne(typeof(BigMak), null).WithMany(null);
 
             var fk = dependentType.ForeignKeys.Single();
             var fkProperty = fk.Properties.Single();
@@ -1774,43 +1354,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Equal("BigMak", dependentType.Navigations.Single().Name);
             Assert.Empty(principalType.Navigations);
             Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount + 1, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void ManyToOne_can_create_relationship_with_no_navigations_with_shadow_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<BigMak>().Key(c => c.Id);
-            modelBuilder.Entity<Pickle>().Property(e => e.BurgerId);
-
-            var dependentType = model.GetEntityType(typeof(Pickle));
-            var principalType = model.GetEntityType(typeof(BigMak));
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder.Entity(typeof(Pickle)).ManyToOne(typeof(BigMak));
-
-            var fk = dependentType.ForeignKeys.Single();
-            var fkProperty = fk.Properties.Single();
-
-            Assert.Equal("BigMakId", fkProperty.Name);
-            Assert.True(fkProperty.IsShadowProperty);
-            Assert.Same(typeof(int?), fkProperty.PropertyType);
-            Assert.Same(dependentType, fkProperty.EntityType);
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Empty(principalType.Navigations);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount + 1, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -1838,7 +1381,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
 
             var fkProperty = dependentType.GetProperty("BigMakId");
 
-            modelBuilder.Entity(typeof(Pickle)).ManyToOne(typeof(BigMak), "BigMak", "Pickles");
+            modelBuilder.Entity(typeof(Pickle)).HasOne(typeof(BigMak), "Pickles").WithMany("Pickles");
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty, fk.Properties.Single());
@@ -1877,8 +1420,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Pickle))
-                .ManyToOne(typeof(BigMak), "BigMak", "Pickles")
+                .Entity(typeof(Pickle)).HasOne(typeof(BigMak), "Pickles").WithMany("Pickles")
                 .ForeignKey("BurgerId");
 
             Assert.Equal(2, dependentType.ForeignKeys.Count);
@@ -1920,8 +1462,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Order))
-                .ManyToOne(typeof(Customer), "Customer", "Orders")
+                .Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders")
                 .ReferencedKey("Id");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -1965,8 +1506,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Order))
-                .ManyToOne(typeof(Customer), "Customer", "Orders")
+                .Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders")
                 .ReferencedKey("AlternateKey");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -2015,8 +1555,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Order))
-                .ManyToOne(typeof(Customer), "Customer", "Orders")
+                .Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders")
                 .ForeignKey("CustomerId")
                 .ReferencedKey("Id");
 
@@ -2061,8 +1600,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Order))
-                .ManyToOne(typeof(Customer), "Customer", "Orders")
+                .Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders")
                 .ReferencedKey("Id")
                 .ForeignKey("CustomerId");
 
@@ -2107,8 +1645,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Order))
-                .ManyToOne(typeof(Customer), "Customer", "Orders")
+                .Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders")
                 .ForeignKey("CustomerId")
                 .ReferencedKey("AlternateKey");
 
@@ -2158,8 +1695,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Order))
-                .ManyToOne(typeof(Customer), "Customer", "Orders")
+                .Entity(typeof(Order)).HasOne(typeof(Customer), "Orders").WithMany("Orders")
                 .ReferencedKey("AlternateKey")
                 .ForeignKey("CustomerId");
 
@@ -2209,8 +1745,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Pickle))
-                .ManyToOne(typeof(BigMak), "BigMak", "Pickles")
+                .Entity(typeof(Pickle)).HasOne(typeof(BigMak), "Pickles").WithMany("Pickles")
                 .ForeignKey("BurgerId")
                 .ReferencedKey("AlternateKey");
 
@@ -2260,8 +1795,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Pickle))
-                .ManyToOne(typeof(BigMak), "BigMak", "Pickles")
+                .Entity(typeof(Pickle)).HasOne(typeof(BigMak), "Pickles").WithMany("Pickles")
                 .ReferencedKey("AlternateKey")
                 .ForeignKey("BurgerId");
 
@@ -2310,7 +1844,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToOne(typeof(CustomerDetails), "Details", "Customer");
+            modelBuilder.Entity(typeof(Customer)).HasOne(typeof(CustomerDetails), "Details").WithOne("Customer");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Same(navToPrincipal, dependentType.Navigations.Single());
@@ -2348,7 +1882,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToOne(typeof(CustomerDetails), "Details", "Customer");
+            modelBuilder.Entity(typeof(Customer)).HasOne(typeof(CustomerDetails), "Details").WithOne("Customer");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Same(navigation, dependentType.Navigations.Single());
@@ -2386,7 +1920,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToOne(typeof(CustomerDetails), "Details", "Customer");
+            modelBuilder.Entity(typeof(Customer)).HasOne(typeof(CustomerDetails), "Details").WithOne("Customer");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Equal("Customer", dependentType.Navigations.Single().Name);
@@ -2423,7 +1957,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToOne(typeof(CustomerDetails), "Details", "Customer");
+            modelBuilder.Entity(typeof(Customer)).HasOne(typeof(CustomerDetails), "Details").WithOne("Customer");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Equal("Customer", dependentType.Navigations.Single().Name);
@@ -2457,7 +1991,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToOne(typeof(CustomerDetails), "Details", "Customer");
+            modelBuilder.Entity(typeof(Customer)).HasOne(typeof(CustomerDetails), "Details").WithOne("Customer");
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty, fk.Properties.Single());
@@ -2496,7 +2030,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Order)).OneToOne(typeof(OrderDetails), "Details", "Order");
+            modelBuilder.Entity(typeof(Order)).HasOne(typeof(OrderDetails), "Details").WithOne("Order");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
             Assert.Equal("Order", dependentType.Navigations.Single().Name);
@@ -2534,7 +2068,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Order)).OneToOne(typeof(OrderDetails), "Details", "Order");
+            modelBuilder.Entity(typeof(Order)).HasOne(typeof(OrderDetails), "Details").WithOne("Order");
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty, fk.Properties.Single());
@@ -2570,7 +2104,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var principalKey = principalType.Keys.Single();
             var dependentKey = dependentType.Keys.Single();
 
-            modelBuilder.Entity(typeof(Customer)).OneToOne(typeof(CustomerDetails), "Details");
+            modelBuilder.Entity(typeof(Customer)).HasOne(typeof(CustomerDetails), "Details").WithOne(null);
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty, fk.Properties.Single());
@@ -2578,76 +2112,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Empty(dependentType.Navigations);
             Assert.Equal("Details", principalType.Navigations.Single().Name);
             Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToOne_can_create_unidirectional_from_other_end_nav_and_new_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Customer>().Key(c => c.Id);
-            modelBuilder.Entity<CustomerDetails>().Key(e => e.Id);
-
-            var dependentType = model.GetEntityType(typeof(CustomerDetails));
-            var principalType = model.GetEntityType(typeof(Customer));
-
-            var fkProperty = dependentType.GetProperty("Id");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            // Passing null as the first arg is not super-compelling, but it is consistent
-            modelBuilder.Entity(typeof(Customer)).OneToOne(typeof(CustomerDetails), null, "Customer");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Equal("Customer", dependentType.Navigations.Single().Name);
-            Assert.Empty(principalType.Navigations);
-            Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToOne_can_create_relationship_with_no_navigations()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Customer>().Key(c => c.Id);
-            modelBuilder.Entity<CustomerDetails>().Key(e => e.Id);
-
-            var dependentType = model.GetEntityType(typeof(CustomerDetails));
-            var principalType = model.GetEntityType(typeof(Customer));
-
-            var fkProperty = dependentType.GetProperty("Id");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder.Entity(typeof(Customer)).OneToOne(typeof(CustomerDetails));
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Empty(principalType.Navigations);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -2680,8 +2144,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Order))
-                .OneToOne(typeof(OrderDetails), "Details", "Order")
+                .Entity(typeof(Order)).HasOne(typeof(OrderDetails), "Details").WithOne("Order")
                 .ForeignKey(typeof(OrderDetails), "OrderId");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -2719,8 +2182,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Customer))
-                .OneToOne(typeof(CustomerDetails), "Details", "Customer")
+                .Entity(typeof(Customer)).HasOne(typeof(CustomerDetails), "Details").WithOne("Customer")
                 .ForeignKey(typeof(CustomerDetails), "Id");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -2760,8 +2222,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToOne(typeof(Bun), "Bun", "BigMak")
+                .Entity(typeof(BigMak)).HasOne(typeof(Bun), "Bun").WithOne("BigMak")
                 .ForeignKey(typeof(Bun), "BurgerId");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
@@ -2797,8 +2258,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToOne(typeof(Bun), "Bun", "BigMak")
+                .Entity(typeof(BigMak)).HasOne(typeof(Bun), "Bun").WithOne("BigMak")
                 .ForeignKey(typeof(Bun), "BurgerId");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -2836,8 +2296,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToOne(typeof(Bun), "Bun")
+                .Entity(typeof(BigMak)).HasOne(typeof(Bun), "Bun").WithOne(null)
                 .ForeignKey(typeof(Bun), "BurgerId");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -2846,81 +2305,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Empty(dependentType.Navigations);
             Assert.Equal("Bun", principalType.Navigations.Single().Name);
             Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToOne_can_create_unidirectional_from_other_end_nav_and_specified_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<BigMak>().Key(c => c.Id);
-            modelBuilder.Entity<Bun>().Property(e => e.BurgerId);
-
-            var dependentType = model.GetEntityType(typeof(Bun));
-            var principalType = model.GetEntityType(typeof(BigMak));
-
-            var fkProperty = dependentType.GetProperty("BurgerId");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToOne(typeof(Bun), null, "BigMak")
-                .ForeignKey(typeof(Bun), "BurgerId");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Equal("BigMak", dependentType.Navigations.Single().Name);
-            Assert.Empty(principalType.Navigations);
-            Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToOne_can_create_relationship_with_no_navigations_and_specified_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<BigMak>().Key(c => c.Id);
-            modelBuilder.Entity<Bun>().Property(e => e.BurgerId);
-
-            var dependentType = model.GetEntityType(typeof(Bun));
-            var principalType = model.GetEntityType(typeof(BigMak));
-
-            var fkProperty = dependentType.GetProperty("BurgerId");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToOne(typeof(Bun))
-                .ForeignKey(typeof(Bun), "BurgerId");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Empty(principalType.Navigations);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -2950,8 +2334,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToOne(typeof(Bun), "Bun", "BigMak")
+                .Entity(typeof(BigMak)).HasOne(typeof(Bun), "Bun").WithOne("BigMak")
                 .ForeignKey(typeof(Bun), "BurgerId");
 
             Assert.Equal(2, dependentType.ForeignKeys.Count);
@@ -2995,8 +2378,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(OrderDetails))
-                .OneToOne(typeof(Order), "Order", "Details")
+                .Entity(typeof(OrderDetails)).HasOne(typeof(Order), "Order").WithOne("Details")
                 .ForeignKey(typeof(OrderDetails), "Id");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
@@ -3036,8 +2418,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(OrderDetails))
-                .OneToOne(typeof(Order), "Order", "Details")
+                .Entity(typeof(OrderDetails)).HasOne(typeof(Order), "Order").WithOne("Details")
                 .ForeignKey(typeof(OrderDetails), "OrderId");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -3047,44 +2428,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Equal("Details", principalType.Navigations.Single().Name);
             Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
             Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void Unidirectional_from_other_end_OneToOne_principal_and_dependent_can_be_flipped()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Customer>().Key(c => c.Id);
-            modelBuilder.Entity<CustomerDetails>().Key(e => e.Id);
-
-            var dependentType = model.GetEntityType(typeof(CustomerDetails));
-            var principalType = model.GetEntityType(typeof(Customer));
-
-            var fkProperty = dependentType.GetProperty("Id");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity<CustomerDetails>()
-                .OneToOne(typeof(Customer), "Customer")
-                .ForeignKey(typeof(CustomerDetails), "Id");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Equal("Customer", dependentType.Navigations.Single().Name);
-            Assert.Empty(principalType.Navigations);
-            Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -3113,53 +2456,15 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity<CustomerDetails>()
-                .OneToOne(typeof(Customer), null, "Details")
+                .Entity<CustomerDetails>().HasOne(typeof(Customer), "Customer").WithOne(null)
                 .ForeignKey(typeof(CustomerDetails), "Id");
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty, fk.Properties.Single());
 
-            Assert.Empty(dependentType.Navigations);
-            Assert.Equal("Details", principalType.Navigations.Single().Name);
-            Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void No_navigation_OneToOne_principal_and_dependent_can_be_flipped()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Customer>().Key(c => c.Id);
-            modelBuilder.Entity<CustomerDetails>().Key(e => e.Id);
-
-            var dependentType = model.GetEntityType(typeof(CustomerDetails));
-            var principalType = model.GetEntityType(typeof(Customer));
-
-            var fkProperty = dependentType.GetProperty("Id");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity<CustomerDetails>()
-                .OneToOne(typeof(Customer))
-                .ForeignKey(typeof(CustomerDetails), "Id");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Empty(dependentType.Navigations);
+            Assert.Equal("Customer", dependentType.Navigations.Single().Name);
             Assert.Empty(principalType.Navigations);
+            Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -3188,8 +2493,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity<CustomerDetails>()
-                .OneToOne(typeof(Customer), "Customer", "Details")
+                .Entity<CustomerDetails>().HasOne(typeof(Customer), "Customer").WithOne("Details")
                 .ForeignKey(typeof(CustomerDetails), "Id");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -3228,8 +2532,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Customer))
-                .OneToOne(typeof(CustomerDetails), "Details", "Customer")
+                .Entity(typeof(Customer)).HasOne(typeof(CustomerDetails), "Details").WithOne("Customer")
                 .ReferencedKey(typeof(Customer), "Id");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -3273,8 +2576,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Customer))
-                .OneToOne(typeof(CustomerDetails), "Details", "Customer")
+                .Entity(typeof(Customer)).HasOne(typeof(CustomerDetails), "Details").WithOne("Customer")
                 .ReferencedKey(typeof(Customer), "AlternateKey");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -3323,8 +2625,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Order))
-                .OneToOne(typeof(OrderDetails), "Details", "Order")
+                .Entity(typeof(Order)).HasOne(typeof(OrderDetails), "Details").WithOne("Order")
                 .ForeignKey(typeof(OrderDetails), "OrderId")
                 .ReferencedKey(typeof(Order), "OrderId");
 
@@ -3369,8 +2670,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Order))
-                .OneToOne(typeof(OrderDetails), "Details", "Order")
+                .Entity(typeof(Order)).HasOne(typeof(OrderDetails), "Details").WithOne("Order")
                 .ReferencedKey(typeof(Order), "OrderId")
                 .ForeignKey(typeof(OrderDetails), "OrderId");
 
@@ -3415,8 +2715,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToOne(typeof(Bun), "Bun", "BigMak")
+                .Entity(typeof(BigMak)).HasOne(typeof(Bun), "Bun").WithOne("BigMak")
                 .ForeignKey(typeof(Bun), "BurgerId")
                 .ReferencedKey(typeof(BigMak), "AlternateKey");
 
@@ -3466,8 +2765,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(BigMak))
-                .OneToOne(typeof(Bun), "Bun", "BigMak")
+                .Entity(typeof(BigMak)).HasOne(typeof(Bun), "Bun").WithOne("BigMak")
                 .ReferencedKey(typeof(BigMak), "AlternateKey")
                 .ForeignKey(typeof(Bun), "BurgerId");
 
@@ -3515,8 +2813,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(OrderDetails))
-                .OneToOne(typeof(Order), "Order", "Details")
+                .Entity(typeof(OrderDetails)).HasOne(typeof(Order), "Order").WithOne("Details")
                 .ReferencedKey(typeof(Order), "OrderId");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
@@ -3556,8 +2853,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(OrderDetails))
-                .OneToOne(typeof(Order), "Order", "Details")
+                .Entity(typeof(OrderDetails)).HasOne(typeof(Order), "Order").WithOne("Details")
                 .ReferencedKey(typeof(Order), "OrderId");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -3599,8 +2895,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(OrderDetails))
-                .OneToOne(typeof(Order), "Order", "Details")
+                .Entity(typeof(OrderDetails)).HasOne(typeof(Order), "Order").WithOne("Details")
                 .ForeignKey(typeof(OrderDetails), "OrderId")
                 .ReferencedKey(typeof(Order), "OrderId");
 
@@ -3643,8 +2938,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(OrderDetails))
-                .OneToOne(typeof(Order), "Order", "Details")
+                .Entity(typeof(OrderDetails)).HasOne(typeof(Order), "Order").WithOne("Details")
                 .ReferencedKey(typeof(Order), "OrderId")
                 .ForeignKey(typeof(OrderDetails), "OrderId");
 
@@ -3655,44 +2949,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Equal("Details", principalType.Navigations.Single().Name);
             Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
             Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void Unidirectional_from_other_end_OneToOne_principal_and_dependent_can_be_flipped_using_principal()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Customer>().Key(c => c.Id);
-            modelBuilder.Entity<CustomerDetails>().Key(e => e.Id);
-
-            var dependentType = model.GetEntityType(typeof(CustomerDetails));
-            var principalType = model.GetEntityType(typeof(Customer));
-
-            var fkProperty = dependentType.GetProperty("Id");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity<CustomerDetails>()
-                .OneToOne(typeof(Customer), "Customer")
-                .ReferencedKey(typeof(Customer), "Id");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Equal("Customer", dependentType.Navigations.Single().Name);
-            Assert.Empty(principalType.Navigations);
-            Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -3721,53 +2977,15 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity<CustomerDetails>()
-                .OneToOne(typeof(Customer), null, "Details")
+                .Entity<CustomerDetails>().HasOne(typeof(Customer), "Customer").WithOne(null)
                 .ReferencedKey(typeof(Customer), "Id");
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty, fk.Properties.Single());
 
-            Assert.Empty(dependentType.Navigations);
-            Assert.Equal("Details", principalType.Navigations.Single().Name);
-            Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void No_navigation_OneToOne_principal_and_dependent_can_be_flipped_using_principal()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Customer>().Key(c => c.Id);
-            modelBuilder.Entity<CustomerDetails>().Key(e => e.Id);
-
-            var dependentType = model.GetEntityType(typeof(CustomerDetails));
-            var principalType = model.GetEntityType(typeof(Customer));
-
-            var fkProperty = dependentType.GetProperty("Id");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity<CustomerDetails>()
-                .OneToOne(typeof(Customer))
-                .ReferencedKey(typeof(Customer), "Id");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty, fk.Properties.Single());
-
-            Assert.Empty(dependentType.Navigations);
+            Assert.Equal("Customer", dependentType.Navigations.Single().Name);
             Assert.Empty(principalType.Navigations);
+            Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -3823,8 +3041,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToMany(typeof(Tomato), "Tomatoes", "Whoopper")
+                .Entity(typeof(Whoopper)).HasMany(typeof(Tomato), "Tomatoes").WithOne("Tomatoes")
                 .ForeignKey("BurgerId1", "BurgerId2");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
@@ -3865,8 +3082,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToMany(typeof(Tomato), "Tomatoes", "Whoopper")
+                .Entity(typeof(Whoopper)).HasMany(typeof(Tomato), "Tomatoes").WithOne("Tomatoes")
                 .ForeignKey("BurgerId1", "BurgerId2");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -3917,8 +3133,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToMany(typeof(Tomato), "Tomatoes", "Whoopper")
+                .Entity(typeof(Whoopper)).HasMany(typeof(Tomato), "Tomatoes").WithOne("Tomatoes")
                 .ForeignKey("BurgerId1", "BurgerId2")
                 .ReferencedKey("AlternateKey1", "AlternateKey2");
 
@@ -3977,8 +3192,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToMany(typeof(Tomato), "Tomatoes", "Whoopper")
+                .Entity(typeof(Whoopper)).HasMany(typeof(Tomato), "Tomatoes").WithOne("Tomatoes")
                 .ReferencedKey("AlternateKey1", "AlternateKey2")
                 .ForeignKey("BurgerId1", "BurgerId2");
 
@@ -4030,8 +3244,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToMany(typeof(Tomato), "Tomatoes")
+                .Entity(typeof(Whoopper)).HasMany(typeof(Tomato), "Tomatoes").WithOne("Tomatoes")
                 .ForeignKey("BurgerId1", "BurgerId2");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -4041,93 +3254,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Empty(dependentType.Navigations);
             Assert.Equal("Tomatoes", principalType.Navigations.Single().Name);
             Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToMany_can_create_unidirectional_from_other_end_nav_and_specified_composite_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Whoopper>().Key(c => new { c.Id1, c.Id2 });
-            modelBuilder.Entity<Tomato>(b =>
-                {
-                    b.Property(e => e.BurgerId1);
-                    b.Property(e => e.BurgerId2);
-                });
-
-            var dependentType = model.GetEntityType(typeof(Tomato));
-            var principalType = model.GetEntityType(typeof(Whoopper));
-
-            var fkProperty1 = dependentType.GetProperty("BurgerId1");
-            var fkProperty2 = dependentType.GetProperty("BurgerId2");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToMany(typeof(Tomato), null, "Whoopper")
-                .ForeignKey("BurgerId1", "BurgerId2");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty1, fk.Properties[0]);
-            Assert.Same(fkProperty2, fk.Properties[1]);
-
-            Assert.Equal("Whoopper", dependentType.Navigations.Single().Name);
-            Assert.Empty(principalType.Navigations);
-            Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToMany_can_create_relationship_with_no_navigations_and_specified_composite_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Whoopper>().Key(c => new { c.Id1, c.Id2 });
-            modelBuilder.Entity<Tomato>(b =>
-                {
-                    b.Property(e => e.BurgerId1);
-                    b.Property(e => e.BurgerId2);
-                });
-
-            var dependentType = model.GetEntityType(typeof(Tomato));
-            var principalType = model.GetEntityType(typeof(Whoopper));
-
-            var fkProperty1 = dependentType.GetProperty("BurgerId1");
-            var fkProperty2 = dependentType.GetProperty("BurgerId2");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToMany(typeof(Tomato))
-                .ForeignKey("BurgerId1", "BurgerId2");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty1, fk.Properties[0]);
-            Assert.Same(fkProperty2, fk.Properties[1]);
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Empty(principalType.Navigations);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -4157,8 +3283,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Tomato))
-                .ManyToOne(typeof(Whoopper), "Whoopper", "Tomatoes")
+                .Entity(typeof(Tomato)).HasOne(typeof(Whoopper), "Tomatoes").WithMany("Tomatoes")
                 .ForeignKey("BurgerId1", "BurgerId2");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
@@ -4199,8 +3324,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Tomato))
-                .ManyToOne(typeof(Whoopper), "Whoopper", "Tomatoes")
+                .Entity(typeof(Tomato)).HasOne(typeof(Whoopper), "Tomatoes").WithMany("Tomatoes")
                 .ForeignKey("BurgerId1", "BurgerId2");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -4251,8 +3375,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Tomato))
-                .ManyToOne(typeof(Whoopper), "Whoopper", "Tomatoes")
+                .Entity(typeof(Tomato)).HasOne(typeof(Whoopper), "Tomatoes").WithMany("Tomatoes")
                 .ForeignKey("BurgerId1", "BurgerId2")
                 .ReferencedKey("AlternateKey1", "AlternateKey2");
 
@@ -4311,8 +3434,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Tomato))
-                .ManyToOne(typeof(Whoopper), "Whoopper", "Tomatoes")
+                .Entity(typeof(Tomato)).HasOne(typeof(Whoopper), "Tomatoes").WithMany("Tomatoes")
                 .ReferencedKey("AlternateKey1", "AlternateKey2")
                 .ForeignKey("BurgerId1", "BurgerId2");
 
@@ -4364,52 +3486,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Tomato))
-                .ManyToOne(typeof(Whoopper), null, "Tomatoes")
-                .ForeignKey("BurgerId1", "BurgerId2");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty1, fk.Properties[0]);
-            Assert.Same(fkProperty2, fk.Properties[1]);
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Equal("Tomatoes", principalType.Navigations.Single().Name);
-            Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void ManyToOne_can_create_unidirectional_from_other_end_nav_and_specified_composite_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Whoopper>().Key(c => new { c.Id1, c.Id2 });
-            modelBuilder.Entity<Tomato>(b =>
-                {
-                    b.Property(e => e.BurgerId1);
-                    b.Property(e => e.BurgerId2);
-                });
-
-            var dependentType = model.GetEntityType(typeof(Tomato));
-            var principalType = model.GetEntityType(typeof(Whoopper));
-
-            var fkProperty1 = dependentType.GetProperty("BurgerId1");
-            var fkProperty2 = dependentType.GetProperty("BurgerId2");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(Tomato))
-                .ManyToOne(typeof(Whoopper), "Whoopper")
+                .Entity(typeof(Tomato)).HasOne(typeof(Whoopper), null).WithMany(null)
                 .ForeignKey("BurgerId1", "BurgerId2");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -4419,49 +3496,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Equal("Whoopper", dependentType.Navigations.Single().Name);
             Assert.Empty(principalType.Navigations);
             Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void ManyToOne_can_create_relationship_with_no_navigations_and_specified_composite_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Whoopper>().Key(c => new { c.Id1, c.Id2 });
-            modelBuilder.Entity<Tomato>(b =>
-                {
-                    b.Property(e => e.BurgerId1);
-                    b.Property(e => e.BurgerId2);
-                });
-
-            var dependentType = model.GetEntityType(typeof(Tomato));
-            var principalType = model.GetEntityType(typeof(Whoopper));
-
-            var fkProperty1 = dependentType.GetProperty("BurgerId1");
-            var fkProperty2 = dependentType.GetProperty("BurgerId2");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(Tomato))
-                .ManyToOne(typeof(Whoopper))
-                .ForeignKey("BurgerId1", "BurgerId2");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty1, fk.Properties[0]);
-            Assert.Same(fkProperty2, fk.Properties[1]);
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Empty(principalType.Navigations);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -4492,8 +3526,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToOne(typeof(ToastedBun), "ToastedBun", "Whoopper")
+                .Entity(typeof(Whoopper)).HasOne(typeof(ToastedBun), "ToastedBun").WithOne("Whoopper")
                 .ForeignKey(typeof(ToastedBun), "BurgerId1", "BurgerId2");
 
             Assert.Same(fk, dependentType.ForeignKeys.Single());
@@ -4534,8 +3567,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToOne(typeof(ToastedBun), "ToastedBun", "Whoopper")
+                .Entity(typeof(Whoopper)).HasOne(typeof(ToastedBun), "ToastedBun").WithOne("Whoopper")
                 .ForeignKey(typeof(ToastedBun), "BurgerId1", "BurgerId2");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -4586,8 +3618,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToOne(typeof(ToastedBun), "ToastedBun", "Whoopper")
+                .Entity(typeof(Whoopper)).HasOne(typeof(ToastedBun), "ToastedBun").WithOne("Whoopper")
                 .ForeignKey(typeof(ToastedBun), "BurgerId1", "BurgerId2")
                 .ReferencedKey(typeof(Whoopper), "AlternateKey1", "AlternateKey2");
 
@@ -4646,8 +3677,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToOne(typeof(ToastedBun), "ToastedBun", "Whoopper")
+                .Entity(typeof(Whoopper)).HasOne(typeof(ToastedBun), "ToastedBun").WithOne("Whoopper")
                 .ReferencedKey(typeof(Whoopper), "AlternateKey1", "AlternateKey2")
                 .ForeignKey(typeof(ToastedBun), "BurgerId1", "BurgerId2");
 
@@ -4695,8 +3725,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToOne(typeof(Moostard), "Moostard", "Whoopper");
+                .Entity(typeof(Whoopper)).HasOne(typeof(Moostard), "Moostard").WithOne("Whoopper");
 
             var fk = dependentType.ForeignKeys.Single();
             Assert.Same(fkProperty1, fk.Properties[0]);
@@ -4735,8 +3764,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Moostard))
-                .OneToOne(typeof(Whoopper), "Whoopper", "Moostard")
+                .Entity(typeof(Moostard)).HasOne(typeof(Whoopper), "Whoopper").WithOne("Moostard")
                 .ForeignKey(typeof(Moostard), "Id1", "Id2");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -4776,8 +3804,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Moostard))
-                .OneToOne(typeof(Whoopper), "Whoopper", "Moostard")
+                .Entity(typeof(Moostard)).HasOne(typeof(Whoopper), "Whoopper").WithOne("Moostard")
                 .ReferencedKey(typeof(Whoopper), "Id1", "Id2");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -4821,8 +3848,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var dependentKey = dependentType.Keys.Single();
 
             modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToOne(typeof(ToastedBun), "ToastedBun")
+                .Entity(typeof(Whoopper)).HasOne(typeof(ToastedBun), "ToastedBun").WithOne(null)
                 .ForeignKey(typeof(ToastedBun), "BurgerId1", "BurgerId2");
 
             var fk = dependentType.ForeignKeys.Single();
@@ -4832,93 +3858,6 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Empty(dependentType.Navigations);
             Assert.Equal("ToastedBun", principalType.Navigations.Single().Name);
             Assert.Same(fk, principalType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToOne_can_create_unidirectional_from_other_end_nav_and_specified_composite_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Whoopper>().Key(c => new { c.Id1, c.Id2 });
-            modelBuilder.Entity<ToastedBun>(b =>
-                {
-                    b.Property(e => e.BurgerId1);
-                    b.Property(e => e.BurgerId2);
-                });
-
-            var dependentType = model.GetEntityType(typeof(ToastedBun));
-            var principalType = model.GetEntityType(typeof(Whoopper));
-
-            var fkProperty1 = dependentType.GetProperty("BurgerId1");
-            var fkProperty2 = dependentType.GetProperty("BurgerId2");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToOne(typeof(ToastedBun), null, "Whoopper")
-                .ForeignKey(typeof(ToastedBun), "BurgerId1", "BurgerId2");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty1, fk.Properties[0]);
-            Assert.Same(fkProperty2, fk.Properties[1]);
-
-            Assert.Equal("Whoopper", dependentType.Navigations.Single().Name);
-            Assert.Empty(principalType.Navigations);
-            Assert.Same(fk, dependentType.Navigations.Single().ForeignKey);
-            Assert.Equal(principalPropertyCount, principalType.Properties.Count);
-            Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
-            Assert.Empty(principalType.ForeignKeys);
-            Assert.Same(principalKey, principalType.Keys.Single());
-            Assert.Same(dependentKey, dependentType.Keys.Single());
-            Assert.Same(principalKey, principalType.GetPrimaryKey());
-            Assert.Same(dependentKey, dependentType.GetPrimaryKey());
-        }
-
-        [Fact]
-        public void OneToOne_can_create_relationship_with_no_navigations_and_specified_composite_FK()
-        {
-            var model = new Model();
-            var modelBuilder = new ModelBuilder(model);
-            modelBuilder.Entity<Whoopper>().Key(c => new { c.Id1, c.Id2 });
-            modelBuilder.Entity<ToastedBun>(b =>
-                {
-                    b.Property(e => e.BurgerId1);
-                    b.Property(e => e.BurgerId2);
-                });
-
-            var dependentType = model.GetEntityType(typeof(ToastedBun));
-            var principalType = model.GetEntityType(typeof(Whoopper));
-
-            var fkProperty1 = dependentType.GetProperty("BurgerId1");
-            var fkProperty2 = dependentType.GetProperty("BurgerId2");
-
-            var principalPropertyCount = principalType.Properties.Count;
-            var dependentPropertyCount = dependentType.Properties.Count;
-            var principalKey = principalType.Keys.Single();
-            var dependentKey = dependentType.Keys.Single();
-
-            modelBuilder
-                .Entity(typeof(Whoopper))
-                .OneToOne(typeof(ToastedBun))
-                .ForeignKey(typeof(ToastedBun), "BurgerId1", "BurgerId2");
-
-            var fk = dependentType.ForeignKeys.Single();
-            Assert.Same(fkProperty1, fk.Properties[0]);
-            Assert.Same(fkProperty2, fk.Properties[1]);
-
-            Assert.Empty(dependentType.Navigations);
-            Assert.Empty(principalType.Navigations);
             Assert.Equal(principalPropertyCount, principalType.Properties.Count);
             Assert.Equal(dependentPropertyCount, dependentType.Properties.Count);
             Assert.Empty(principalType.ForeignKeys);
@@ -5030,8 +3969,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var modelBuilder = HobNobBuilder();
 
             modelBuilder
-                .Entity(typeof(Hob))
-                .OneToMany(typeof(Nob), "Nobs", "Hob")
+                .Entity(typeof(Hob)).HasMany(typeof(Nob), "Nobs").WithOne("Nobs")
                 .ForeignKey("HobId1", "HobId2");
 
             var entityType = (IEntityType)modelBuilder.Model.GetEntityType(typeof(Nob));
@@ -5047,8 +3985,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var modelBuilder = HobNobBuilder();
 
             modelBuilder
-                .Entity(typeof(Nob))
-                .OneToMany(typeof(Hob), "Hobs", "Nob")
+                .Entity(typeof(Nob)).HasMany(typeof(Hob), "Hobs").WithOne("Hobs")
                 .ForeignKey("NobId1", "NobId2");
 
             var entityType = (IEntityType)modelBuilder.Model.GetEntityType(typeof(Hob));
@@ -5064,8 +4001,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var modelBuilder = HobNobBuilder();
 
             modelBuilder
-                .Entity(typeof(Nob))
-                .ManyToOne(typeof(Hob), "Hob", "Nobs")
+                .Entity(typeof(Nob)).HasOne(typeof(Hob), "Nobs").WithMany("Nobs")
                 .ForeignKey("HobId1", "HobId2");
 
             var entityType = (IEntityType)modelBuilder.Model.GetEntityType(typeof(Nob));
@@ -5081,8 +4017,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var modelBuilder = HobNobBuilder();
 
             modelBuilder
-                .Entity<Hob>()
-                .ManyToOne(typeof(Nob), "Nob", "Hobs")
+                .Entity<Hob>().HasOne(typeof(Nob), "Hobs").WithMany("Hobs")
                 .ForeignKey("NobId1", "NobId2");
 
             var entityType = (IEntityType)modelBuilder.Model.GetEntityType(typeof(Hob));
@@ -5098,8 +4033,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var modelBuilder = HobNobBuilder();
 
             modelBuilder
-                .Entity(typeof(Hob))
-                .OneToOne(typeof(Nob), "Nob", "Hob")
+                .Entity(typeof(Hob)).HasOne(typeof(Nob), "Nob").WithOne("Hob")
                 .ForeignKey(typeof(Nob), "HobId1", "HobId2");
 
             var entityType = (IEntityType)modelBuilder.Model.GetEntityType(typeof(Nob));
@@ -5115,8 +4049,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var modelBuilder = HobNobBuilder();
 
             modelBuilder
-                .Entity(typeof(Nob))
-                .OneToOne(typeof(Hob), "Hob", "Nob")
+                .Entity(typeof(Nob)).HasOne(typeof(Hob), "Hob").WithOne("Nob")
                 .ForeignKey(typeof(Hob), "NobId1", "NobId2");
 
             var entityType = (IEntityType)modelBuilder.Model.GetEntityType(typeof(Hob));
@@ -5132,8 +4065,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var modelBuilder = HobNobBuilder();
 
             modelBuilder
-                .Entity(typeof(Hob))
-                .OneToMany(typeof(Nob), "Nobs", "Hob")
+                .Entity(typeof(Hob)).HasMany(typeof(Nob), "Nobs").WithOne("Nobs")
                 .ForeignKey("HobId1", "HobId2")
                 .Required();
 
@@ -5152,8 +4084,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Equal(
                 Strings.CannotBeNullable("NobId1", "Hob", "Int32"),
                 Assert.Throws<InvalidOperationException>(() => modelBuilder
-                    .Entity(typeof(Nob))
-                    .OneToMany(typeof(Hob), "Hobs", "Nob")
+                    .Entity(typeof(Nob)).HasMany(typeof(Hob), "Hobs").WithOne("Hobs")
                     .ForeignKey("NobId1", "NobId2")
                     .Required(false)).Message);
 
@@ -5170,8 +4101,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var modelBuilder = HobNobBuilder();
 
             modelBuilder
-                .Entity(typeof(Nob))
-                .ManyToOne(typeof(Hob), "Hob", "Nobs")
+                .Entity(typeof(Nob)).HasOne(typeof(Hob), "Nobs").WithMany("Nobs")
                 .ForeignKey("HobId1", "HobId2")
                 .Required();
 
@@ -5190,8 +4120,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Equal(
                 Strings.CannotBeNullable("NobId1", "Hob", "Int32"),
                 Assert.Throws<InvalidOperationException>(() => modelBuilder
-                    .Entity(typeof(Hob))
-                    .ManyToOne(typeof(Nob), "Nob", "Hobs")
+                    .Entity(typeof(Hob)).HasOne(typeof(Nob), "Hobs").WithMany("Hobs")
                     .ForeignKey("NobId1", "NobId2")
                     .Required(false)).Message);
 
@@ -5208,8 +4137,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             var modelBuilder = HobNobBuilder();
 
             modelBuilder
-                .Entity(typeof(Hob))
-                .OneToOne(typeof(Nob), "Nob", "Hob")
+                .Entity(typeof(Hob)).HasOne(typeof(Nob), "Nob").WithOne("Hob")
                 .ForeignKey(typeof(Nob), "HobId1", "HobId2")
                 .Required();
 
@@ -5228,8 +4156,7 @@ namespace Microsoft.Data.Entity.Tests.Metadata
             Assert.Equal(
                 Strings.CannotBeNullable("NobId1", "Hob", "Int32"),
                 Assert.Throws<InvalidOperationException>(() => modelBuilder
-                    .Entity(typeof(Nob))
-                    .OneToOne(typeof(Hob), "Hob", "Nob")
+                    .Entity(typeof(Nob)).HasOne(typeof(Hob), "Hob").WithOne("Nob")
                     .ForeignKey(typeof(Hob), "NobId1", "NobId2")
                     .Required(false)).Message);
 
